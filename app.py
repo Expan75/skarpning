@@ -35,6 +35,8 @@ Data nedan visar till vilken grad riksdagsmedlemmar har röstat Ja, Nej, Avstår
 Data nedan är tagen från Svenska Parlamentets Öppna Data Initiativ: https://data.riksdagen.se
 """
 
+st.write("  \n")
+
 plotData = (
     df[["%frånvarande", "%ja", "%nej", "%avstår", "party"]].groupby("party").mean()
 ).sort_values("%frånvarande", ascending=False)
@@ -54,15 +56,16 @@ fig = go.Figure(
     ]
 )
 # Change the bar mode
+period = st.sidebar.slider(
+    label="Välj Period", min_value=0.0, max_value=100.0, value=(25.0, 75.0)
+)
 fig.update_layout(
-    barmode="stack", title_text="Snitt frånvaro (%) per Parti under perioden 2019-2020"
+    barmode="stack", title_text=f"Snitt frånvaro (%) under perioden: {period}"
 )
 st.plotly_chart(fig, use_container_width=True)
 
-
 """
 # Partifrånvaro från Riksdagen
-### Sök på parti:
 """
 # TODO: shuffle on every init. Let's not be biased :))
 user_party = st.selectbox("Välj parti: ", parties)
@@ -87,9 +90,7 @@ except:
 st.table(subset[["%frånvarande", "%ja", "%nej", "%avstår"]][0:10])
 
 
-f""" # Ledamotfrånvaro från Riksdagen 
-### Sök på politker inom {user_party}:
-# """
+f""" # Ledamotfrånvaro från {user_party} """
 
 
 def capitalizeId(_id):
