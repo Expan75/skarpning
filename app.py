@@ -23,18 +23,21 @@ df = (
 PARTIES = ("KD", "SD", "S", "M", "V", "C", "L", "MP", "Partilös", "Alla")
 
 
-# ------- START OF USER SELECTIONS -------- #
+# ------- START OF USER SELECTIONS IN SIDEBAR -------- #
 # allow selection of timerange of data
 time_period = st.sidebar.slider(
     label="Välj Period", min_value=0.0, max_value=100.0, value=(25.0, 75.0)
 )
+
+start_time = st.sidebar.date_input(label="Välj startdatum")
+end_time = st.sidebar.date_input(label="Välj slutdatum")
 # allow selection of user parties
 user_parties = st.sidebar.multiselect(
     "Välj ibland partier: ", PARTIES
 )  # TODO: shuffle on every list init (political bias?)
 
 user_mp = st.sidebar.selectbox(
-    "Sök på politker inom: %s" % user_parties,
+    "Sök på politker inom dina valda partier: %s " % ", ".join(user_parties),
     list(map(lambda x: capitalizeId(x), df.loc[df.party.isin(user_parties)].index)),
 )
 # ------- END OF USER SELECTIONS -------- #
@@ -55,14 +58,12 @@ Data nedan visar till vilken grad riksdagsmedlemmar har röstat Ja, Nej, Avstår
 
 All data är tagen från Svenska Parlamentets Öppna Data Initiativ: https://data.riksdagen.se
 """
-
 st.write("  \n")
 
+# get grouped data per party
 plotData = (
     df[["%frånvarande", "%ja", "%nej", "%avstår", "party"]].groupby("party").mean()
 ).sort_values("%frånvarande", ascending=False)
-# plotData
-
 
 # note we skip a summary stat for "alla", hence len(PARTIES) > what we plot
 fig = go.Figure(
@@ -74,11 +75,11 @@ fig = go.Figure(
     ]
 )
 
-f""" # Sammanfattad Frånvaro per Parti """
-
+""" # Sammanfattad Frånvaro per Parti """
+st.write(f"Beräknad för perioden: {start_time}-{end_time}")
 fig.update_layout(
     barmode="stack",
-    title_text=f"Snitt % frånvaro vid alla beslut under perioden: {time_period} ",
+    title_text=f"Snitt %-frånvaro för riksdagspolitiker inom varje parti vid beslut",
 )
 st.plotly_chart(fig, use_container_width=True)
 
@@ -94,6 +95,8 @@ except:
 
 # TODO: add ranking in terms of % frånvaro compared to others
 
+
+# TODO: dynamically load in images scraped from wikipedia (including a description)
 st.image(
     "https://data.riksdagen.se/filarkiv/bilder/ledamot/5ecb17ba-ebbe-4958-a142-a5134aff9808_160.jpg"
 )
